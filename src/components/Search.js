@@ -13,21 +13,33 @@ const Search = ({ navigation, favActors }) => {
 
     const [actors, setActors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [nextOffset, setNextOffset] = useState(0);
-    const [isMoreResults, setIsMoreResults] = useState(true);
+    const [nextOffset, setNextOffset] = useState(1);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isError, setIsError] = useState(false);
 
 
     useEffect(() => {
-        requestPopularActors();
+        requestPopularActors(actors, nextOffset);
     }, []);
 
+
+    /*const requestPopularActors = async (prevActors, offset) => {
+        setIsRefreshing(true);
+        setIsError(false);
+        try {
+            const theMovieDBSearchResult = await getActors(offset);
+            setActors([...prevActors, ...theMovieDBSearchResult.results]);
+            setNextOffset(zomatoSearchResult.page + 1);
+        } catch (error) {
+            setIsError(true);
+            setActors([]);
+        }
+        setIsRefreshing(false);
+    };*/
 
     const requestPopularActors = async () => {
         setIsRefreshing(true);
         setIsError(false);
-        setActors([]);
         try {
             const theMovieDBSearchResult = await getActors();
             setActors(theMovieDBSearchResult.results);
@@ -67,6 +79,10 @@ const Search = ({ navigation, favActors }) => {
         return false;
     };
 
+    /*const loadMoreActors = () => {
+          requestRestaurants(restaurants, nextOffset);
+      };*/
+
     return (
         <View style={styles.container}>
             <View style={styles.searchContainer}>
@@ -101,7 +117,8 @@ const Search = ({ navigation, favActors }) => {
                                 isFav={amIaFavActor(item.id)} />
                         )}
                         refreshing={isRefreshing}
-                        onRefresh={searchActors}
+                        //onEndReached={loadMoreActors}
+                        //onEndReachedThreshold={0.5}
                     />)
             }
         </View>
