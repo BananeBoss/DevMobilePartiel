@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, StyleSheet, FlatList, Keyboard } from 'react-native';
 import { connect } from 'react-redux';
 
@@ -7,7 +7,7 @@ import DisplayError from '../components/DisplayError';
 
 import Colors from '../definitions/Colors';
 
-import { getActors } from '../api/theMovieDB';
+import { getActors, getSearch } from '../api/theMovieDB';
 
 const Search = ({ navigation, favActors }) => {
 
@@ -18,9 +18,16 @@ const Search = ({ navigation, favActors }) => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isError, setIsError] = useState(false);
 
-    const requestActors = async () => {
+
+    useEffect(() => {
+        requestPopularActors();
+    }, []);
+
+
+    const requestPopularActors = async () => {
         setIsRefreshing(true);
         setIsError(false);
+        setActors([]);
         try {
             const theMovieDBSearchResult = await getActors();
             setActors(theMovieDBSearchResult.results);
@@ -31,16 +38,23 @@ const Search = ({ navigation, favActors }) => {
         setIsRefreshing(false);
     };
 
+    const requestActors = async () => {
+        setIsRefreshing(true);
+        setIsError(false);
+        try {
+            const theMovieDBSearchResult = await getSearch();
+            setActors(theMovieDBSearchResult.person_results);
+        } catch (error) {
+            setIsError(true);
+            setActors([]);
+        }
+        setIsRefreshing(false);
+    };
+
     const searchActors = () => {
         Keyboard.dismiss();
         requestActors([], 0);
-    };
-
-    const loadMoreActors = () => {
-        if (isMoreResults) {
-            requestActors(actors, nextOffset);
-        };
-    };
+    }
 
     const navigateToActorDetails = (actorsID) => {
         navigation.navigate("ViewActor", { actorsID });
@@ -67,6 +81,11 @@ const Search = ({ navigation, favActors }) => {
                     color={Colors.mainGreen}
                     onPress={searchActors}
                 />
+                <Button
+                    title='effacer'
+                    color={Colors.mainGreen}
+                    onPress={requestPopularActors}
+                />
             </View>
             {
                 isError ?
@@ -81,8 +100,6 @@ const Search = ({ navigation, favActors }) => {
                                 onClick={navigateToActorDetails}
                                 isFav={amIaFavActor(item.id)} />
                         )}
-                        onEndReached={loadMoreActors}
-                        onEndReachedThreshold={0.5}
                         refreshing={isRefreshing}
                         onRefresh={searchActors}
                     />)

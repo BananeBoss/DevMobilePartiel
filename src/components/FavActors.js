@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import ActorlistItem from './ActorListItem.js';
 import DisplayError from '../components/DisplayError';
 
-import { getActorDetails } from '../api/theMovieDB';
+import { getActors } from '../api/theMovieDB';
 
 const FavActors = ({ navigation, favActors }) => {
 
@@ -20,14 +20,17 @@ const FavActors = ({ navigation, favActors }) => {
   const refreshFavActors = async () => {
     setIsRefreshing(true);
     setIsError(false);
-    let actors = [];
+    let tempActors = [];
     try {
+      const theMovieDBSearchResult = await getActors();
       for (const id of favActors) {
-        const theMovieDBSearchResult = await getActorDetails(id);
-        actors.push(theMovieDBSearchResult);
+        theMovieDBSearchResult.results.forEach(element => {
+          if (id == element.id)
+            tempActors.push(element.results.id)
+        });
+
       };
-      setActors(actors);
-      console.log(actors);
+      setActors(tempActors);
     } catch (error) {
       setIsError(true);
       setActors([]);
@@ -39,8 +42,8 @@ const FavActors = ({ navigation, favActors }) => {
     navigation.navigate("ViewActor", { actorsID });
   };
 
-  const amIaFavActor = (actorID) => {
-    if (favActors.findIndex(i => i === actorID) !== -1) {
+  const amIaFavActor = (actorsID) => {
+    if (favActors.findIndex(i => i === actorsID) !== -1) {
       return true;
     }
     return false;
@@ -54,12 +57,12 @@ const FavActors = ({ navigation, favActors }) => {
           (<FlatList
             data={actors}
             extraData={favActors}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.toString()}
             renderItem={({ item }) => (
               <ActorlistItem
-              actorData={item}
+                actorData={item}
                 onClick={navigateToActorDetails}
-                isFav={amIaFavActor(item.id)} />
+                isFav={amIaFavActor(item)} />
             )}
             refreshing={isRefreshing}
             onRefresh={refreshFavActors}

@@ -27,3 +27,16 @@ export async function getActorDetails(actorID) {
     throw error;
   }
 };
+
+export async function getSearch(search) {
+    try {
+      const myHeaders = new Headers({ 'user-key': API_KEY });
+      const url = ` https://api.themoviedb.org/3/find/${search}?api_key=${API_KEY}&language=en-US&external_source=imdb_id`;
+      const response = await fetch(url, { headers: myHeaders });
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.log(`Error with function getActorDetails ${error.message}`);
+      throw error;
+    }
+  };
